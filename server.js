@@ -81,7 +81,9 @@ app.patch("/usuarios/:id", (req, res) => {
 
     const keys = Object.keys(campos)
 
-    const query = keys.map(key => `${key} = ?`).join(", ")
+    const query = `UPDATE usuarios
+                   SET ${keys.map(key => `${key} = ?`).join(", ")}
+                   WHERE id = ?`
     
     const values = Object.values(campos)
 
