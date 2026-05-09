@@ -15,48 +15,50 @@ const conexion = mysql.createConnection({
 conexion.connect((err) => {
     err
     ? console.log("Error de conexion a base de datos!")
-    : console.log("Conexion exitosa a base de datos!")
+    : console.log("Coneccion exitosa a base de datos!")
 })
 
-app.get("/usuarios", (req, res) => {
-    const query = "SELECT * FROM usuarios"
+app.get("/usuarios", async (req, res) => {
+    
+    const query = `SELECT * FROM usuarios`
 
-    conexion.query(query, (err, results) => {
-        err
-        ? res.json({err: err})
-        : res.json(results)
-    })
+    try {
+        const [results] = await conexion.promise().query(query)
+        res.json(results)
+    } catch (err) {
+        res.json({err: err})
+    }
 })
 
-app.get("/usuarios/:id", (req, res) => {
+app.get("/usuarios/:id", async(req, res) => {
     const id = req.params.id
 
-    const query = "SELECT * FROM usuarios WHERE id = ?"
+    const query = `SELECT * FROM usuarios
+                   WHERE id = ?`
 
-    conexion.query(query, [id], (err, results) => {
-        err
-        ? res.json({err: err})
-        : res.json(results)
-    })
+    try {
+        const [results] = await conexion.promise().query(query, [id])
+        res.json(results)
+    } catch (err) {
+        res.json({err: err})
+    }
 })
 
-app.post("/usuarios", (req, res) => {
-    const { nombre, edad, estado} = req.body
+app.post("/usuarios", async(req, res) => {
+    const {nombre, edad, estado} = req.body
 
     const query = `INSERT INTO usuarios(nombre, edad, estado)
                    VALUES(?, ?, ?)`
 
-    conexion.query(query, [nombre, edad, estado], (err, results) => {
-        err
-        ? res.json({err: err})
-        : res.json({
-            mensaje: "Usuario Creado!",
-            results
-        })
-    })
+    try {
+        const [results] = await conexion.promise().query(query, [nombre, edad, estado])
+        res.json({mensaje: "Usuario Creado!"})
+    } catch (err) {
+        res.json({err: err})
+    }
 })
 
-app.put("/usuarios/:id", (req, res) => {
+app.put("/usuarios/:id", async(req, res) => {
     const id = req.params.id
 
     const {nombre, edad, estado} = req.body
@@ -65,18 +67,16 @@ app.put("/usuarios/:id", (req, res) => {
                    SET nombre = ?, edad = ?, estado = ?
                    WHERE id = ?`
 
-    conexion.query(query, [nombre, edad, estado, id], (err, results) => {
-        err
-        ? res.json({err: err})
-        : res.json({
-            mensaje: "Usuario actualizado!"
-        })
-    })
+    try {
+        const [results] = await conexion.promise().query(query, [nombre, edad, estado, id])
+        res.json({mensaje: "Usuario actualizado!"})
+    } catch (err) {
+        res.json({err: err})
+    }
 })
 
-app.patch("/usuarios/:id", (req, res) => {
+app.patch("/usuarios/:id", async(req, res) => {
     const id = req.params.id
-
     const campos = req.body
 
     const keys = Object.keys(campos)
@@ -84,33 +84,33 @@ app.patch("/usuarios/:id", (req, res) => {
     const query = `UPDATE usuarios
                    SET ${keys.map(key => `${key} = ?`).join(", ")}
                    WHERE id = ?`
-    
+
     const values = Object.values(campos)
 
-    conexion.query(query, [...values, id], (err, results) => {
-        err
-        ? res.json({err: err})
-        : res.json({
-            mensaje: "Usuario actualizado!"
-        })
-    })
+    console.log(query)
+
+    try {
+        const [results] = await conexion.promise().query(query, [...values, id])
+        res.json({mensaje: "Usuario actualizado!"})
+    } catch (err) {
+        res.json({err: err})
+    }
 })
 
-app.delete("/usuarios/:id", (req, res) => {
+app.delete("/usuarios/:id", async(req, res) => {
     const id = req.params.id
 
     const query = `DELETE FROM usuarios
                    WHERE id = ?`
 
-    conexion.query(query, [id], (err, results) => {
-        err
-        ? res.json({err: err})
-        : res.json({
-            mensaje: "Usuario eliminado"
-        })
-    })
+    try {
+        const [results] = await conexion.promise().query(query, [id])
+        res.json({mensaje: "Usuario eliminado!"})
+    } catch (err) {
+        res.json({err: err})
+    }
 })
 
 app.listen(3000, () => {
-    console.log("Servidor corriendo")
+    console.log("Servidor corriendo!")
 })
